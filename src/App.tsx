@@ -1,4 +1,3 @@
-import React from 'react'
 import { Navbar } from './components/common/Navbar'
 import { GoogleLoginButton } from './components/auth/GoogleLoginButton'
 import { useGoogleAuth } from './hooks/useGoogleAuth'
