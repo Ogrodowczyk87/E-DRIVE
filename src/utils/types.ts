@@ -7,7 +7,7 @@ export type DriveFile = {
     iconHint?: string;
 };
 
-export type DrivelistResponse = {
+export type DriveListResponse = {
     files: DriveFile[];
     nextPageToken?: string;
 };
