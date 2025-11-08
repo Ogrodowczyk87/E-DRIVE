@@ -20,7 +20,8 @@ export const useGoogleAuth = () => {
 
     // Konfiguracja logowania Google
     const login = useGoogleLogin({
-        scope: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+        scope: 'openid profile email https://www.googleapis.com/auth/drive.readonly',  // ✅ + dostęp do Google Drive
+
         // Callback po udanym logowaniu
         onSuccess: (cred) => {
             const accessToken = cred.access_token;
