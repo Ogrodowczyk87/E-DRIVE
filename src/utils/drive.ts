@@ -3,6 +3,7 @@ import type { DriveListResponse } from "./types";
 
 // Bazowy URL dla Google Drive API v3 - endpoint do operacji na plikach
 const BASE = "https://www.googleapis.com/drive/v3/files";
+const UPLOAD = "https://www.googleapis.com/upload/drive/v3/files";
 
 // Parametr 'fields' określa jakie dane chcemy otrzymać z API
 // files(...) - dane o plikach: id, nazwa, rozmiar, data modyfikacji, typ MIME
@@ -59,4 +60,169 @@ export async function listFiles(
     // Zawiera: { files: DriveFile[], nextPageToken?: string }
     return res.json();
 
+}
+
+
+/**
+ * Przesyła plik na Google Drive
+ * @param token - Token autoryzacyjny Google OAuth (Bearer token)
+ * @param file - Plik do przesłania (obiekt File z input[type="file"])
+ * @param parentID - ID folderu docelowego na Google Drive
+ * @returns Promise z danymi przesłanego pliku
+ */
+export async function uploadFile(
+    token: string,
+    file: File,
+    parentID: string
+){
+    // Przygotowanie metadanych pliku dla Google Drive API
+    const metadata: Record<string, any> = {
+        name: file.name,                                    // Nazwa pliku
+        mimeType: file.type || 'application/octet-stream', // Typ MIME z fallbackiem
+    }
+    
+    // Jeśli podano folder docelowy, dodaj go do metadanych
+    if (parentID) metadata.parents = [parentID];
+
+    // Tworzenie FormData dla multipart upload (metadata + plik)
+    const form = new FormData();
+    
+    // Dodanie metadanych jako JSON Blob z odpowiednim Content-Type
+    form.append(
+        'metadata',
+        new Blob([JSON.stringify(metadata)], {type: 'application/json'})
+    )
+    
+    // Dodanie rzeczywistego pliku
+    form.append("file", file)
+
+    // Wykonanie zapytania POST do upload endpoint
+    const res = await fetch (`${UPLOAD}?uploadType=multipart`, {
+        method: 'POST',
+        headers: {
+            Authorization: `Bearer ${token}`, // Autoryzacja Bearer token
+            // Content-Type automatycznie ustawiony przez FormData jako multipart/form-data
+        },
+        body: form, // FormData z metadanymi i plikiem
+    });
+
+    // Obsługa błędów uploadu
+    if(!res.ok) throw new Error("Error uploading file");
+    
+    // Zwrócenie danych przesłanego pliku (id, name, mimeType, itp.)
+    return res.json();
+}
+
+/**
+ * Usuwa plik z Google Drive
+ * @param token - Token autoryzacyjny Google OAuth (Bearer token) 
+ * @param fileID - Unikalny identyfikator pliku do usunięcia
+ * @returns Promise z wartością true jeśli operacja się powiodła
+ */
+export async function deleteFile(
+    token: string,
+    fileID: string
+){
+    // Wykonanie zapytania DELETE do konkretnego pliku
+    const res = await fetch(`${BASE}/${fileID}`, {
+        method: 'DELETE',        // HTTP metoda dla usuwania zasobów
+        headers: {
+            Authorization: `Bearer ${token}`, // Autoryzacja - kto usuwa plik
+        },
+    });
+    
+    // Sprawdzenie czy operacja się powiodła
+    if(!res.ok) throw new Error("Error deleting file");
+    
+    // Zwrócenie potwierdzenia usunięcia
+    return true;
+}
+
+/**
+ * Tworzy nowy folder na Google Drive
+ * @param token - Token autoryzacyjny Google OAuth (Bearer token)
+ * @param name - Nazwa nowego folderu
+ * @param parentID - Opcjonalne ID folderu nadrzędnego (jeśli nie podano, folder będzie w katalogu głównym)
+ * @returns Promise z danymi utworzonego folderu
+ */
+export async function createFolder(
+    token: string,
+    name: string,
+    parentID?: string
+){
+    // Przygotowanie danych folderu - Record<string,any> pozwala na elastyczne dodawanie pól
+    const body: Record<string, any> = {
+        name,                                               // Nazwa folderu
+        mimeType: 'application/vnd.google-apps.folder',    // Specjalny MIME type Google Drive dla folderów
+    }
+    
+    // Jeśli podano folder nadrzędny, ustaw go jako parent
+    if(parentID) body.parents = [parentID];
+    
+    // Wykonanie zapytania POST do tworzenia nowego zasobu
+    const res = await fetch(`${BASE}`, {
+        method: 'POST',                                     // HTTP metoda dla tworzenia nowych zasobów
+        headers: {
+            Authorization: `Bearer ${token}`,               // Autoryzacja użytkownika
+            'Content-Type': 'application/json',             // Informuje że wysyłamy JSON
+        },
+        body: JSON.stringify(body),                         // Konwersja obiektu na JSON string
+    });
+    
+    // Obsługa błędów tworzenia folderu
+    if(!res.ok) throw new Error("Error creating folder");
+    
+    // Zwrócenie danych utworzonego folderu (id, name, mimeType, parents, itp.)
+    return res.json();
+}
+
+/**
+ * Pobiera binarne dane pliku z Google Drive (download)
+ * @param token - Token autoryzacyjny Google OAuth (Bearer token)
+ * @param fileID - Unikalny identyfikator pliku do pobrania
+ * @returns Promise z ArrayBuffer zawierającym surowe dane pliku
+ */
+export async function downloadBinary(
+    token: string,
+    fileID: string
+){
+    // Zapytanie z parametrem alt=media - pobiera surową zawartość pliku zamiast metadanych
+    const res = await fetch(`${BASE}/${fileID}?alt=media`, {
+        headers: {
+            Authorization: `Bearer ${token}`,               // Autoryzacja dostępu do pliku
+        },
+    });
+    
+    // Sprawdzenie czy download się powiódł
+    if(!res.ok) throw new Error("Error downloading file");
+    
+    // Zwrócenie surowych danych binarnych pliku jako ArrayBuffer
+    return res.arrayBuffer();
+}
+
+/**
+ * Eksportuje plik Google Workspace (Docs, Sheets, Slides) do określonego formatu
+ * @param token - Token autoryzacyjny Google OAuth (Bearer token)  
+ * @param fileID - Unikalny identyfikator pliku Google Workspace
+ * @param mimeType - Docelowy typ MIME do eksportu (np. 'application/pdf', 'text/plain')
+ * @returns Promise z ArrayBuffer zawierającym wyeksportowane dane
+ */
+export async function exportGoogleFile(
+    token: string,
+    fileID: string,
+    mimeType: string
+){
+    // Endpoint /export służy do konwersji plików Google Workspace na standardowe formaty
+    // encodeURIComponent zabezpiecza MIME type przed problemami z URL
+    const res = await fetch(`${BASE}/${fileID}/export?mimeType=${encodeURIComponent(mimeType)}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,               // Autoryzacja dostępu do pliku
+        },
+    });
+    
+    // Sprawdzenie czy eksport się powiódł
+    if(!res.ok) throw new Error("Error exporting Google file");
+    
+    // Zwrócenie wyeksportowanych danych w wybranym formacie
+    return res.arrayBuffer();
 }
