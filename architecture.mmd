@@ -1,0 +1,20 @@
+graph TD
+    A[User Interface] -->|Interacts with| B[React Components]
+    B -->|Uses| C[Custom Hooks]
+    C -->|Manages State| D[React Query]
+    C -->|Calls| E[Google Drive API]
+    D -->|Caches Data| F[Local Cache]
+    E -->|Authenticates with| G[OAuth 2.0]
+    G -->|Provides Token| E
+    E -->|Performs Operations| H[Google Drive]
+    subgraph Frontend
+        A
+        B
+        C
+        D
+    end
+    subgraph Backend
+        E
+        G
+        H
+    end

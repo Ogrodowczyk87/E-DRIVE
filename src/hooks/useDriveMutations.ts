@@ -24,7 +24,7 @@
  */
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { uploadFile, deleteFile, createFolder, downloadBinary, exportGoogleFile } from "@/utils/drive";
+import { uploadFile, deleteFile, createFolder, downloadBinary, exportGoogleFile } from "../utils/drive";
 
 /**
  * Niestandardowy hook do uploadu plików na Google Drive
@@ -70,7 +70,7 @@ export function useUploadFile(token: string | null) {
 
       // Wywołanie rzeczywistej funkcji uploadu Google Drive API
       // Non-null assertion (!) jest bezpieczne, ponieważ sprawdziliśmy powyżej
-      return uploadFile(token!, args.file, args.parentId);
+      return uploadFile(token!, args.file, args.parentId || '');
     },
     
     /**
