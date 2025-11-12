@@ -17,7 +17,7 @@
 
 import { useState } from "react";
 import { useGoogleAuth } from "../../hooks/useGoogleAuth";
-import { useCreateFolder } from "../../hooks/useCreateFolder";
+import { useCreateFolder } from "../../hooks/useDriveMutations";
 
 export const NewFolderButton = () => {
   // Pobranie tokenu autoryzacji z hooka useGoogleAuth

@@ -1,6 +1,6 @@
 import { FileUpload } from "../components/drive/FileUpload";
 import { NewFolderButton } from "../components/drive/NewFolderButton";
-// import { FileList } from "@/components/drive/FileList";
+import { FileList } from "../components/drive/FileList";
 
 export const Dashboard = () => {
   return (
@@ -11,7 +11,7 @@ export const Dashboard = () => {
       </div>
 
       <FileUpload />
-      {/* <FileList /> */}
+      <FileList />
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import { useGoogleAuth } from "../../hooks/useGoogleAuth";
 import { useDeleteFile } from "../../hooks/useDriveMutations";
-import { useDownloadFile } from "../../hooks/useDownloadFile";
+import { useDownloadFile } from "../../hooks/useDriveMutations";
 import { saveBlob } from "../../utils/download";
 
 export const FileActions = ({ id, name, mimeType }: { id: string; name: string; mimeType: string }) => {
@@ -14,7 +14,7 @@ export const FileActions = ({ id, name, mimeType }: { id: string; name: string; 
         className="text-sm border rounded-lg px-2 py-1 hover:bg-gray-100"
         onClick={async () => {
           const { blob, name: filename } = await dl.mutateAsync({ fileId: id, name, mimeType });
-          saveBlob(blob, filename);
+          saveBlob(new Blob([blob], { type: mimeType }), filename);
         }}
       >
         Pobierz

@@ -181,3 +181,31 @@ export function useDeleteFile(token: string | null) {
   });
 }
 
+export function useCreateFolder(token: string | null) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (args: { name: string; parentId?: string }) => {
+      if (!token) throw new Error("NO_TOKEN");
+      return createFolder(token, args.name, args.parentId);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["files"] }),
+  });
+}
+
+  export function useDownloadFile(token: string | null) {
+  return useMutation({
+    mutationFn: async (args: { fileId: string; mimeType?: string; name: string }) => {
+      if (!token) throw new Error("NO_TOKEN");
+      // jeśli to plik Google Docs / Sheets / Slides → eksport
+      if ((args.mimeType || "").startsWith("application/vnd.google-apps")) {
+        const blob = await exportGoogleFile(token, args.fileId, "application/pdf");
+        return { blob, name: `${args.name}.pdf` };
+      } else {
+        const blob = await downloadBinary(token, args.fileId);
+        return { blob, name: args.name };
+      }
+    },
+  });
+}
+
+
