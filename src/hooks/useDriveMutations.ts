@@ -24,7 +24,7 @@
  */
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { uploadFile, deleteFile, createFolder, downloadBinary, exportGoogleFile } from "../utils/drive";
+import { uploadFile, deleteFile, createFolder, downloadBinary, exportGoogleFile, createPublicPERmission } from "../utils/drive";
 
 /**
  * Niestandardowy hook do uploadu plików na Google Drive
@@ -181,26 +181,67 @@ export function useDeleteFile(token: string | null) {
   });
 }
 
+/**
+ * Hook do tworzenia folderów na Google Drive
+ * 
+ * @description Ten hook umożliwia tworzenie nowych folderów na Google Drive za pomocą React Query.
+ * Po udanym utworzeniu folderu automatycznie odświeża listę plików w cache.
+ * 
+ * @param token - Token autoryzacji Google OAuth (null, jeśli brak autoryzacji)
+ * @returns Obiekt mutacji React Query do tworzenia folderów
+ */
 export function useCreateFolder(token: string | null) {
-  const qc = useQueryClient();
+  const qc = useQueryClient(); // Uzyskanie dostępu do cache React Query
+
   return useMutation({
+    /**
+     * Funkcja odpowiedzialna za tworzenie folderu
+     * @param args - Parametry tworzenia folderu
+     * @param args.name - Nazwa nowego folderu
+     * @param args.parentId - Opcjonalne ID folderu nadrzędnego
+     * @returns Promise rozwiązujący się po utworzeniu folderu
+     */
     mutationFn: async (args: { name: string; parentId?: string }) => {
-      if (!token) throw new Error("NO_TOKEN");
-      return createFolder(token, args.name, args.parentId);
+      if (!token) throw new Error("NO_TOKEN"); // Sprawdzenie autoryzacji
+      return createFolder(token, args.name, args.parentId); // Wywołanie API do tworzenia folderu
     },
+    
+    /**
+     * Callback wywoływany po udanym utworzeniu folderu
+     * Odświeża listę plików w cache
+     */
     onSuccess: () => qc.invalidateQueries({ queryKey: ["files"] }),
   });
 }
 
-  export function useDownloadFile(token: string | null) {
+/**
+ * Hook do pobierania plików z Google Drive
+ * 
+ * @description Ten hook umożliwia pobieranie plików z Google Drive, w tym eksportowanie
+ * plików Google Docs, Sheets i Slides do formatu PDF.
+ * 
+ * @param token - Token autoryzacji Google OAuth (null, jeśli brak autoryzacji)
+ * @returns Obiekt mutacji React Query do pobierania plików
+ */
+export function useDownloadFile(token: string | null) {
   return useMutation({
+    /**
+     * Funkcja odpowiedzialna za pobieranie pliku
+     * @param args - Parametry pobierania pliku
+     * @param args.fileId - ID pliku do pobrania
+     * @param args.mimeType - Opcjonalny MIME type pliku (np. dla eksportu)
+     * @param args.name - Nazwa pliku do zapisania
+     * @returns Promise rozwiązujący się z obiektem Blob i nazwą pliku
+     */
     mutationFn: async (args: { fileId: string; mimeType?: string; name: string }) => {
-      if (!token) throw new Error("NO_TOKEN");
-      // jeśli to plik Google Docs / Sheets / Slides → eksport
+      if (!token) throw new Error("NO_TOKEN"); // Sprawdzenie autoryzacji
+
+      // Eksport plików Google Docs, Sheets, Slides do PDF
       if ((args.mimeType || "").startsWith("application/vnd.google-apps")) {
         const blob = await exportGoogleFile(token, args.fileId, "application/pdf");
         return { blob, name: `${args.name}.pdf` };
       } else {
+        // Pobieranie innych typów plików
         const blob = await downloadBinary(token, args.fileId);
         return { blob, name: args.name };
       }
@@ -208,4 +249,25 @@ export function useCreateFolder(token: string | null) {
   });
 }
 
-
+/**
+ * Hook do zarządzania mutacjami na Google Drive
+ * 
+ * @description Ten hook umożliwia wykonywanie różnych operacji na plikach Google Drive,
+ * takich jak tworzenie uprawnień publicznych.
+ * 
+ * @param token - Token autoryzacji Google OAuth (null, jeśli brak autoryzacji)
+ * @returns Obiekt z funkcją mutacji do zarządzania plikami
+ */
+export function useDriveMutations(token: string | null) {
+  return {
+    /**
+     * Funkcja odpowiedzialna za tworzenie uprawnień publicznych dla pliku
+     * @param fileId - ID pliku, dla którego mają zostać utworzone uprawnienia
+     * @returns Promise rozwiązujący się po utworzeniu uprawnień
+     */
+    mutation: async (fileId: string) => {
+      if (!token) throw new Error("NO_TOKEN"); // Sprawdzenie autoryzacji
+      return createPublicPERmission(token, fileId); // Wywołanie API do tworzenia uprawnień
+    },
+  };
+}

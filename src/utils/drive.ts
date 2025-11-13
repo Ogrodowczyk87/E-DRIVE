@@ -226,3 +226,29 @@ export async function exportGoogleFile(
     // Zwrócenie wyeksportowanych danych w wybranym formacie
     return res.arrayBuffer();
 }
+
+export async function createPublicPERmission(
+    token: string,
+    fileID: string              
+) {
+    const body = {
+        role: "reader",
+        type: "anyone"
+    };
+
+    const res = await fetch(
+        `https://www.googleapis.com/drive/v3/files/${fileID}/permissions`,
+        {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body), 
+        }
+        
+    )
+    if (!res.ok) throw new Error("Error creating public permission");
+
+    return res.json();
+}
