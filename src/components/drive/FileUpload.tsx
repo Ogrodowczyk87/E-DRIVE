@@ -17,7 +17,7 @@
 
 import { useState } from "react";
 import { useGoogleAuth } from "../../hooks/useGoogleAuth";
-import { useUploadFile } from "../..//hooks/useDriveMutations";
+import { useUploadFile } from "../../hooks/useDriveMutations";
 
 
 export const FileUpload = () => {

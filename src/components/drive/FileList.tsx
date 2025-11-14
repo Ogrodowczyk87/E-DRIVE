@@ -3,8 +3,7 @@ import { useFiles } from "../../hooks/useDriveAPI";
 import { useGoogleAuth } from "../../hooks/useGoogleAuth";
 import { FileToolbar } from "./FileToolbar";
 import { FileCard } from "./FileCard";
-import { FileDetailsModal } from "./FileDetailsModal";
-import { Skeleton } from "react-loading-skeleton";
+// import { FileDetailsModal } from "./FileDetailsModal";
 
 export const FileList = () => {
   const { token } = useGoogleAuth();
@@ -35,10 +34,14 @@ export const FileList = () => {
       />
 
       {isLoading && (
-        <div className="space-y-2">
-          <Skeleton className="h-16" />
-          <Skeleton className="h-16" />
-          <Skeleton className="h-16" />
+        <div className="space-y-2" aria-live="polite">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div
+              key={index}
+              className="h-16 rounded-xl bg-gray-100 animate-pulse"
+              aria-hidden="true"
+            />
+          ))}
         </div>
       )}
 
@@ -75,12 +78,11 @@ export const FileList = () => {
       )}
 
       {/* Modal do wyświetlania szczegółów pliku */}
-      <FileDetailsModal
+      {/* <FileDetailsModal
         open={Boolean(detailsId)}
         fileId={detailsId}
         onClose={() => setDetailsId(null)}
-      />
+      /> */}
     </div>
   );
 };
-

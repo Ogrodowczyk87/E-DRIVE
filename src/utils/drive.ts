@@ -254,11 +254,10 @@ export async function createPublicPERmission(
 }
 
 export async function getFileDetails(token: string, fileId: string) {
-  const fields = "*"; // pobiera absolutnie wszystko
-  const res = await fetch(
-    `${BASE}/files/${fileId}?fields=${fields}`,
-    { headers: { Authorization: `Bearer ${token}` } }
-  );
+  const params = new URLSearchParams({ fields: "*" });
+  const res = await fetch(`${BASE}/${fileId}?${params.toString()}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
   if (!res.ok) throw new Error("DETAILS_ERROR");
   return res.json();
 }

@@ -3,6 +3,7 @@ export type DriveFile = {
     name: string;
     modifiedTime: string;
     size?: string;
+    mimeType?: string;
     parents?: string[];
     iconHint?: string;
 };

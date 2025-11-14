@@ -1,7 +1,13 @@
 import { useFileDetails } from "../../hooks/useDriveAPI";
 import { useGoogleAuth } from "../../hooks/useGoogleAuth";
 
-export const FileDetailsModal = ({ open, onClose, fileId }) => {
+type FileDetailsModalProps = {
+  open: boolean;
+  fileId: string | null;
+  onClose: () => void;
+};
+
+export const FileDetailsModal = ({ open, onClose, fileId }: FileDetailsModalProps) => {
   const { token } = useGoogleAuth();
   const { data, isLoading } = useFileDetails(token, fileId);
 
