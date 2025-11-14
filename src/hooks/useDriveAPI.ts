@@ -1,7 +1,7 @@
 // Import hooka useQuery z React Query do zarządzania stanem serwera
 import {useQuery} from '@tanstack/react-query';
 // Import funkcji do komunikacji z Google Drive API
-import {listFiles} from '../utils/drive';
+import {getFileDetails, listFiles} from '../utils/drive';
 // Import typu odpowiedzi z Google Drive API
 import  type {DriveListResponse} from '../utils/types';
 
@@ -65,3 +65,15 @@ export function useFiles(params: UseFilesParams) {
         refetchOnWindowFocus: false,
     })
 }
+
+export function useFileDetails(token: string | null, fileId: string | null) {
+  return useQuery({
+    queryKey: ["file-details", fileId],
+    queryFn: () => {
+      if (!token || !fileId) throw new Error("NO_TOKEN");
+      return getFileDetails(token, fileId);
+    },
+    enabled: Boolean(token && fileId),
+  });
+}
+

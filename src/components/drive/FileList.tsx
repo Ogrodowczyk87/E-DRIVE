@@ -3,11 +3,17 @@ import { useFiles } from "../../hooks/useDriveAPI";
 import { useGoogleAuth } from "../../hooks/useGoogleAuth";
 import { FileToolbar } from "./FileToolbar";
 import { FileCard } from "./FileCard";
+import { FileDetailsModal } from "./FileDetailsModal";
+
 
 export const FileList = () => {
   const { token } = useGoogleAuth();
   const [orderBy, setOrderBy] = useState("modifiedTime desc");
   const [pageToken, setPageToken] = useState<string | undefined>(undefined);
+
+  
+  // Stan do zarządzania szczegółami pliku
+  const [detailsId, setDetailsId] = useState<string | null>(null);
 
   const { data, isLoading, isError, refetch } = useFiles({
     token,
@@ -46,6 +52,7 @@ export const FileList = () => {
             mimeType={f.mimeType}
             size={f.size}
             modifiedTime={f.modifiedTime}
+            onClick={() => setDetailsId(f.id)} // Ustawienie ID pliku do wyświetlenia szczegółów
           />
         ))}
       </div>
@@ -60,6 +67,14 @@ export const FileList = () => {
           </button>
         </div>
       )}
+
+      {/* Modal do wyświetlania szczegółów pliku */}
+      <FileDetailsModal
+        open={Boolean(detailsId)}
+        fileId={detailsId}
+        onClose={() => setDetailsId(null)}
+      />
     </div>
   );
 };
+

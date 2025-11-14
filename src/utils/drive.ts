@@ -197,7 +197,7 @@ export async function downloadBinary(
     if(!res.ok) throw new Error("Error downloading file");
     
     // Zwrócenie surowych danych binarnych pliku jako ArrayBuffer
-    return res.arrayBuffer();
+    return res.blob();
 }
 
 /**
@@ -224,7 +224,7 @@ export async function exportGoogleFile(
     if(!res.ok) throw new Error("Error exporting Google file");
     
     // Zwrócenie wyeksportowanych danych w wybranym formacie
-    return res.arrayBuffer();
+    return res.blob();
 }
 
 export async function createPublicPERmission(
@@ -251,4 +251,14 @@ export async function createPublicPERmission(
     if (!res.ok) throw new Error("Error creating public permission");
 
     return res.json();
+}
+
+export async function getFileDetails(token: string, fileId: string) {
+  const fields = "*"; // pobiera absolutnie wszystko
+  const res = await fetch(
+    `${BASE}/files/${fileId}?fields=${fields}`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  if (!res.ok) throw new Error("DETAILS_ERROR");
+  return res.json();
 }
