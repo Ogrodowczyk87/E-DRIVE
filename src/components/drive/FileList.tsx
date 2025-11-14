@@ -4,7 +4,7 @@ import { useGoogleAuth } from "../../hooks/useGoogleAuth";
 import { FileToolbar } from "./FileToolbar";
 import { FileCard } from "./FileCard";
 import { FileDetailsModal } from "./FileDetailsModal";
-
+import { Skeleton } from "react-loading-skeleton";
 
 export const FileList = () => {
   const { token } = useGoogleAuth();
@@ -34,7 +34,13 @@ export const FileList = () => {
         onRefresh={() => refetch()}
       />
 
-      {isLoading && <div className="text-sm text-gray-500">Ładowanie plików...</div>}
+      {isLoading && (
+        <div className="space-y-2">
+          <Skeleton className="h-16" />
+          <Skeleton className="h-16" />
+          <Skeleton className="h-16" />
+        </div>
+      )}
 
       {isError && <div className="text-sm text-red-600">Błąd ładowania listy plików.</div>}
 
