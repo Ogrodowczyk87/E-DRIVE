@@ -3,7 +3,7 @@ import { useFiles } from "../../hooks/useDriveAPI";
 import { useGoogleAuth } from "../../hooks/useGoogleAuth";
 import { FileToolbar } from "./FileToolbar";
 import { FileCard } from "./FileCard";
-// import { FileDetailsModal } from "./FileDetailsModal";
+import { FileDetailsModal } from "./FileDetailsModal";
 
 export const FileList = () => {
   const { token } = useGoogleAuth();
@@ -78,11 +78,13 @@ export const FileList = () => {
       )}
 
       {/* Modal do wyświetlania szczegółów pliku */}
-      {/* <FileDetailsModal
+       <FileDetailsModal
         open={Boolean(detailsId)}
         fileId={detailsId}
         onClose={() => setDetailsId(null)}
-      /> */}
+      /> 
+        
     </div>
-  );
+
+);
 };

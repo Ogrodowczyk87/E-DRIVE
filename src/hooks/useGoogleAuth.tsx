@@ -1,4 +1,4 @@
-import React, { createContext, useContext, ReactNode, useState, useEffect } from "react";
+import { createContext, useContext, ReactNode, useState, useEffect } from "react";
 import { useGoogleLogin, googleLogout } from "@react-oauth/google";
 
 // Interfejs definiujący strukturę danych użytkownika Google
@@ -89,12 +89,13 @@ const useProvideGoogleAuth = (): GoogleAuthContextValue => {
     return { user, login, logout, loading, token };
 }
 
-export const GoogleAuthProvider = ({ children }: { children: ReactNode }): JSX.Element => {
+export const GoogleAuthProvider = ({ children }: { children: ReactNode }) => {
     const value = useProvideGoogleAuth();
-    return React.createElement(
-        GoogleAuthContext.Provider,
-        { value },
-        children
+
+    return (
+        <GoogleAuthContext.Provider value={value}>
+            {children}
+        </GoogleAuthContext.Provider>
     );
 }
 export const useGoogleAuth = () => {
@@ -104,11 +105,3 @@ export const useGoogleAuth = () => {
     }
     return context;
 }
-
-Fix useGoogleAuth provider and context issues
-
-- Corrected JSX syntax errors in `GoogleAuthProvider`.
-- Ensured `GoogleAuthContext` is properly defined and initialized.
-- Fixed type issues with `value` passed to `GoogleAuthContext.Provider`.
-- Resolved unterminated JSX tags causing compilation errors.
-- Improved the stability and reliability of the Google authentication context.
