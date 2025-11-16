@@ -105,10 +105,3 @@ export const useGoogleAuth = () => {
     return context;
 }
 
-Fix useGoogleAuth provider and context issues
-
-- Corrected JSX syntax errors in `GoogleAuthProvider`.
-- Ensured `GoogleAuthContext` is properly defined and initialized.
-- Fixed type issues with `value` passed to `GoogleAuthContext.Provider`.
-- Resolved unterminated JSX tags causing compilation errors.
-- Improved the stability and reliability of the Google authentication context.
